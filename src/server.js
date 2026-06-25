@@ -10,6 +10,12 @@ const { enforceSafety } = require('./safety');
 const app = express();
 app.use(express.json({ limit: '64kb' }));
 
+// Minimal logger — swap for a structured logger (pino, winston) in production.
+const logger = {
+  info: (...args) => console.log(...args),   // eslint-disable-line no-console
+  error: (...args) => console.error(...args)  // eslint-disable-line no-console
+};
+
 const PORT = process.env.PORT || 3000;
 
 const VALID_CHANNELS = new Set(['app', 'sms', 'call_center', 'merchant_portal']);
@@ -92,14 +98,12 @@ app.post('/sort-ticket', async (req, res) => {
 
 // --- Fallback error handler ----------------------------------------------
 app.use((err, _req, res, _next) => {
-  // eslint-disable-next-line no-console
-  console.error(err);
+  logger.error(err);
   res.status(500).json({ error: 'internal_server_error' });
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`QueueStorm ticket sorter listening on port ${PORT}`);
+  logger.info(`QueueStorm ticket sorter listening on port ${PORT}`);
 });
 
 module.exports = app;

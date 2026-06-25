@@ -16,8 +16,10 @@ const { enforceSafety, requestsSensitiveInfo } = require('../safety');
  * falls back to the rules-based result so the request never errors out.
  */
 
-const ENABLED = process.env.LLM_FALLBACK_ENABLED === 'true' && !!process.env.ANTHROPIC_API_KEY;
+const LLM_FALLBACK_ACTIVE = process.env.LLM_FALLBACK_ENABLED === 'true' && !!process.env.ANTHROPIC_API_KEY;
 const TIMEOUT_MS = 8000; // keep well under the 30s /sort-ticket budget
+const LLM_MODEL = 'claude-haiku-4-5-20251001';
+const LLM_MAX_TOKENS = 300;
 
 const ALLOWED_CASE_TYPES = [
   'wrong_transfer',
@@ -35,11 +37,15 @@ const ALLOWED_DEPARTMENT = [
 ];
 
 function isEnabled() {
-  return ENABLED;
+  return LLM_FALLBACK_ACTIVE;
 }
 
+/**
+ * @param {string} message - raw customer message
+ * @returns {Promise<object|null>} parsed classification or null on any failure
+ */
 async function classifyWithLLM(message) {
-  if (!ENABLED) return null;
+  if (!LLM_FALLBACK_ACTIVE) return null;
 
   const systemPrompt = `You triage customer support tickets for a digital finance company (bKash-like).
 Classify the message into JSON ONLY, no prose, no markdown fences, with this exact shape:
@@ -61,8 +67,8 @@ Rules:
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
+        model: LLM_MODEL,
+        max_tokens: LLM_MAX_TOKENS,
         system: systemPrompt,
         messages: [{ role: 'user', content: message }]
       }),

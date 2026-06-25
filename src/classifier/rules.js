@@ -20,8 +20,7 @@ const PHISHING_PATTERNS = [
   /\botp\b/i,
   /\bpin\b/i,
   /\bcvv\b/i,
-  /password/i,
-  /\bpasswo?rd\b/i,
+  /\bpasswo?rd\b/i,      // matches "password" and misspelling "passwrd"
   /full card number/i,
   /card number/i,
   /(asked|asking|share|told me to give|chay\s*chilo|dite bolse).{0,30}(otp|pin|password|cvv)/i,
@@ -91,7 +90,6 @@ const OTHER_HINTS = [
 ];
 
 const CRITICAL_HINTS = [/urgent/i, /immediately/i, /scam/i, /fraud/i, /hacked/i, /stole|stolen/i];
-const HIGH_AMOUNT_PATTERN = /(\d{1,3}(,\d{3})*|\d+)\s*(taka|bdt|tk)\b/i;
 
 function countMatches(text, patterns) {
   let score = 0;
@@ -192,7 +190,6 @@ function finalize(caseType, text, scores, lowConfidence = false) {
       break;
     }
 
-    case 'other':
     default:
       department = 'customer_support';
       severity = 'low';

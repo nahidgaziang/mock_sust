@@ -19,6 +19,9 @@ const app = require('../src/server');
 const PORT = process.env.PORT;
 const BASE = `http://localhost:${PORT}`;
 
+/** Milliseconds to wait after requiring the server before hitting it. */
+const SERVER_BIND_DELAY_MS = 300;
+
 const SAMPLE_CASES = [
   { message: 'I sent 3000 to wrong number', expected_case_type: 'wrong_transfer', expected_severity: 'high' },
   { message: 'Payment failed but balance deducted', expected_case_type: 'payment_failed', expected_severity: 'high' },
@@ -79,7 +82,7 @@ async function run() {
   let failed = 0;
 
   // Give the server a moment to bind
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, SERVER_BIND_DELAY_MS));
 
   // --- /health ---
   const health = await getJSON('/health');
@@ -92,8 +95,7 @@ async function run() {
   }
 
   // --- sample cases ---
-  for (let i = 0; i < SAMPLE_CASES.length; i++) {
-    const c = SAMPLE_CASES[i];
+  for (const [i, c] of SAMPLE_CASES.entries()) {
     const ticketId = `T-${String(i + 1).padStart(3, '0')}`;
     const resp = await postJSON('/sort-ticket', {
       ticket_id: ticketId,
@@ -138,6 +140,7 @@ async function run() {
   }
 
   console.log(`\n${passed} passed, ${failed} failed`);
+  if (app.close) app.close();
   process.exit(failed > 0 ? 1 : 0);
 }
 

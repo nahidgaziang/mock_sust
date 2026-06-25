@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: queuestorm-ticket-sorter
+    env: node
+    region: singapore        # closest region to Bangladesh
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LLM_FALLBACK_ENABLED
+        value: "false"
+      # Uncomment and set ANTHROPIC_API_KEY as a secret if enabling LLM fallback:
+      # - key: ANTHROPIC_API_KEY
+      #   sync: false        # marks it as a secret — enter in Render dashboard

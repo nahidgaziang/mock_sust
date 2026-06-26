@@ -1,14 +1,17 @@
-FROM node:18-alpine
+FROM python:3.12-slim
 
+# Set working directory
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev --no-audit --no-fund
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src ./src
+# Copy the rest of the application code
+COPY . .
 
-ENV NODE_ENV=production
-ENV PORT=3000
-EXPOSE 3000
+# Expose the port
+EXPOSE 8000
 
-CMD ["node", "src/server.js"]
+# Run the FastAPI application using Uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
